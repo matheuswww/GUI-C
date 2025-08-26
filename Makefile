@@ -1,23 +1,29 @@
+OBJDIR := obj
+BINDIR := dos
+
 flags := -fno-stack-protector -O0 -Wall -std=gnu23 -m16 -fno-pie -fno-pic
-flags += -ffreestanding -I include
+flags += -ffreestanding -I include -nostdlib
 ldflags := -m elf_i386 --nmagic --script=gui.ld
-objects := main.o
-xobjects := xgfx.o
+objects := $(OBJDIR)/main.o $(OBJDIR)/shapes.o
+xobjects := $(OBJDIR)/xgfx.o
 NASMENV := -i include/asm/
 export NASMENV
 
 .PHONY: clean
 
-all: gui.com
+all: $(BINDIR)/gui.com
 
-gui.com: $(objects) $(xobjects)
+$(BINDIR)/gui.com: $(objects) $(xobjects)
 	ld $(ldflags) $^ -o $@
 
-main.o: main.c
-	cc $(flags) -c $^
+$(OBJDIR)/main.o: main.c
+	cc $(flags) -c $^ -o $@
 
-xgfx.o: xgfx.asm
+$(OBJDIR)/xgfx.o: xgfx.asm
 	nasm -f elf $^ -o $@
 
+$(OBJDIR)/shapes.o: shapes.c
+	cc $(flags) -c $^ -o $@
+
 clean:
-	rm -f *.o *.com
+	rm -rf $(OBJDIR)/* $(BINDIR)/*

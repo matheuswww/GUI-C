@@ -13,6 +13,4 @@ SECTIONS
     *(.rodata);
     *(.bss);
   }
-
-  heap = ALIGN(2);
 }
