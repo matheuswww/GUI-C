@@ -1,14 +1,43 @@
 bits 16
 %include "xgfx.h"
+global heap1
+global heapsz
 global exit
 global xputchar
 global heap1
 global xvideomode
 global xgetchar
 global xdrawpointT
+global xdrawpoint
 
 heap1  dd _heap
-_heap: times 0x1000 db 0x00
+_heap: 
+      times 0x1000 db 0x00
+      times 0x1000 db 0x00
+      times 0x1000 db 0x00
+      times 0x1000 db 0x00
+      times 0x1000 db 0x00
+      times 0x1000 db 0x00
+      times 0x1000 db 0x00
+      times 0x1000 db 0x00
+
+heapsz: dw ($-_heap)
+
+xdrawpoint:
+  push bp
+  mov bp,sp
+
+  arg cx,0
+  arg dx,1
+  arg ax,2
+
+  xor bx,bx
+  mov ah,0x0c
+  int 0x10
+
+  mov sp,bp
+  pop bp
+  ret
 
 xdrawpointT:
   push bp

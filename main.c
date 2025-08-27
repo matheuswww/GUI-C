@@ -7,26 +7,38 @@ asm(
 #include <assembly.h>
 #include <shapes.h>
 
-void *heaptr;
+void *heaptr, *heapsaved;
 extern boolean videoinit;
 
 void main() {
-  point *pnt1, *pnt2, *pnt3;
+  point *pnt1, *pnt2;
+  rectangle *rct;
+  int8 clr;
+  int16 thickness;
 
   videoinit = false;
   freeall();
 
-  videomode(x40x25xT);
-  pnt1 = mkpoint(10, 6);
-  pnt2 = mkpoint(9, 15);
-  pnt3 = mkpoint(1, 3);
-  if (!pnt1 || !pnt2 || !pnt3)
-    print($1 "Memory error \r\n");
-  drawpoint(pnt1);
-  drawpoint(pnt2);
-  drawpoint(pnt3);
-  getchar();
+  videomode(x640x480x16);
 
+  clr = 2;
+  thickness = 10;
+  
+  pnt1 = mkpoint(10, 10, clr);
+  pnt2 = mkpoint(500, 300, clr);
+  if (!pnt1 || !pnt2) {
+    print($1 "Memory error \r\n");
+    return;
+  }
+
+  rct = mkrectangle(pnt1, pnt2, clr, 0, thickness, false);
+  if (!rct) {
+    print($1 "Memory error \r\n");
+    return;
+  }
+  drawrectangle(rct);
+  
+  getchar();
   freeall();
   return;
 }
@@ -61,8 +73,13 @@ void print(int8 *str) {
 
 void *alloc(int16 size) {
   void *p;
+  int16 newsize;
 
   if(!size)
+    return $v 0;
+
+  newsize = ((heaptr-heap1)+size);
+  if (newsize > heapsz)
     return $v 0;
 
   p = heaptr;
@@ -75,4 +92,16 @@ void freeall() {
   heaptr = heap1;
 
   return;
+}
+
+void save(void) {
+  heapsaved = heaptr;
+
+  return;
+}
+
+void load() {
+    heaptr = heapsaved;
+
+    return;
 }
