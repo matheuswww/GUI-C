@@ -3,41 +3,38 @@ asm(
   "call main\n"
   "call exit\n"
 );
-#include <gui.h>
 #include <assembly.h>
 #include <shapes.h>
+#include <bmp.h>
+#include <omnistd.h> 
 
 void *heaptr, *heapsaved;
 extern boolean videoinit;
+extern rgb **globalColors;
 
 void main() {
-  point *pnt1, *pnt2;
-  rectangle *rct;
-  int8 clr;
-  int16 thickness;
-
+  bitmap *bm;
+  boolean ret;
+  
   videoinit = false;
+  globalColors = (rgb **)0; 
+
   freeall();
-
   videomode(x640x480x16);
+  globalColors = setpalettes();
+  if (!globalColors)
+    return; 
 
-  clr = 2;
-  thickness = 10;
-  
-  pnt1 = mkpoint(10, 10, clr);
-  pnt2 = mkpoint(500, 300, clr);
-  if (!pnt1 || !pnt2) {
-    print($1 "Memory error \r\n");
+  bm = parsebmp($1 "penguin", 5, 5);
+  if (!bm) {
+    print($1 "error\n\r");
+    freeall();
     return;
   }
 
-  rct = mkrectangle(pnt1, pnt2, clr, 0, thickness, false);
-  if (!rct) {
-    print($1 "Memory error \r\n");
-    return;
-  }
-  drawrectangle(rct);
-  
+  ret = drawbmp(bm);
+
+
   getchar();
   freeall();
   return;
@@ -104,4 +101,38 @@ void load() {
     heaptr = heapsaved;
 
     return;
+}
+
+int16 open(int8 *file, int16 offset) {
+  int16 fd, ret;
+
+  fd = xopen(file);
+  if (!fd)
+    return 0;
+
+  ret = xmove(fd, offset);
+  if (!ret) {
+    close(fd);
+    return 0;
+  }
+  
+  return fd;
+}
+
+int8 read(int16 fd) {
+  int16 n;
+  int8 ah, al;
+
+  n = xread(fd);
+  al = (n & 0xff);
+  ah = ((n & 0xff00) >> 8);
+  if (ah) {
+    printf("xread() error code = 0x%\n", $2 al);
+    return (int8)0;
+  }
+  return al;
+}
+
+void close(int16 fd) {
+  xclose(fd);
 }

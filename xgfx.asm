@@ -9,6 +9,11 @@ global xvideomode
 global xgetchar
 global xdrawpointT
 global xdrawpoint
+global xopen
+global xclose
+global xmove
+global xread
+global xsetpalette
 
 heap1  dd _heap
 _heap: 
@@ -20,8 +25,113 @@ _heap:
       times 0x1000 db 0x00
       times 0x1000 db 0x00
       times 0x1000 db 0x00
-
 heapsz: dw ($-_heap)
+
+xsetpalette:
+  push bp
+  mov bp,sp
+
+  mov ax, 0x1010
+  arg bx,0
+  xor cx,cx
+  xor dx,dx
+  arg ch,2
+  arg cl,3
+  arg dh,1
+  int 0x10
+
+  mov sp,bp
+  pop bp
+  ret
+
+xopen:
+    push bp
+    mov bp,sp
+
+    mov ax,0x3d00
+    arg dx,0
+    clc
+    int 0x21
+
+    jc .error
+    jmp .end
+
+  .error:
+    neg ax
+  .end:
+    mov sp,bp
+    pop bp
+    ret
+
+xmove: 
+    push bp
+    mov bp, sp
+
+    mov ax, 0x4200
+    arg bx,0
+    xor cx,cx
+    arg dx,1
+
+    clc
+    int 0x21
+
+    jc .error
+    mov ax,0x01
+    jmp .end
+
+  .error:
+    xor ax,ax
+  .end:
+    mov sp,bp
+    pop bp
+    ret
+
+xclose:
+    push bp
+    mov bp,sp
+
+    mov ax,0x3e00
+    arg bx,0
+    clc
+    int 0x21
+
+    jc .error
+    mov ax,0x01
+    jmp .end
+  
+  .error:
+    xor ax,ax
+  .end:
+    mov sp,bp
+    pop bp
+    ret
+
+readbuf db 0x00
+
+xread:
+    push bp
+    mov bp,sp
+
+    mov ax,0x3f00
+    arg bx,0
+    mov cx,0x01
+    mov dx,readbuf
+
+    clc
+    int 0x21
+    jc .error
+
+    mov bx,readbuf
+    xor ax,ax
+    mov byte al,[bx]
+    jmp .end
+
+  .error:
+    mov ah,0xff
+  .end:
+    mov sp,bp
+    pop bp
+    ret
 
 xdrawpoint:
   push bp

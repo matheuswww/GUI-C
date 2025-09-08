@@ -37,6 +37,18 @@ struct s_rectangle {
 } packed;
 typedef struct s_rectangle rectangle;
 
+struct s_rgb {
+  int8 red;
+  int8 green;
+  int8 blue;
+  int8 _;
+} packed;
+typedef struct s_rgb rgb;
+
+typedef rgb colortable[16];
+
+rgb **setpalettes();
+void setpalette(int8,rgb*);
 void videomode(int8);
 int16 getmaxx(void);
 int16 getmaxy(void);
@@ -47,3 +59,4 @@ boolean drawrectangle(rectangle*);
 point *mkpoint(int16,int16,int8);
 line *mkline(point*,point*,int8,int16);
 rectangle *mkrectangle(point *pnt1, point *pnt2, int8 fgcolor, int8 bgcolor, int16 thickness, boolean solid);
+rgb *mkrgb(int8,int8,int8);

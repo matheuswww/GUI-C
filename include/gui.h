@@ -9,9 +9,11 @@
 
 #define packed __attribute__((packed))
 
+#define zero(x, y) set((x), 0, (y))
+
 typedef unsigned char int8;
 typedef unsigned short int int16;
-typedef unsigned char boolean;
+typedef unsigned int boolean;
 
 extern void *heap1;
 extern int16 heapsz;
@@ -24,3 +26,7 @@ void save(void);
 void load(void);
 void videomode(int8);
 int8 getchar(void);
+int16 open(int8*, int16);
+int8 read(int16);
+void close(int16);
+int16 stringlen(int8*);

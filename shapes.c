@@ -1,8 +1,10 @@
 #include "./include/gui.h"
 #include "./include/assembly.h"
 #include "./include/shapes.h"
+#include <omnistd.h>
 
 boolean videoinit;
+rgb **globalColors;
 
 point *mkpoint(int16 x,int16 y, int8 color) {
   point *p;
@@ -63,6 +65,68 @@ rectangle *mkrectangle(point *pnt1, point *pnt2, int8 fgcolor, int8 bgcolor, int
   }
 
   return rct;
+}
+
+rgb *mkrgb(int8 red, int8 green, int8 blue) {
+  rgb *p;
+  int16 size;
+
+  size = sizeof(struct s_rgb);
+  p = (rgb *)alloc(size);
+  if (!p)
+    return (rgb *)0;
+  zero($1 p, size);
+
+  p->red = red;
+  p->green = green;
+  p->blue = blue;
+
+  return p;
+}
+
+rgb **setpalettes() {
+  int16 reg, n;
+  rgb *color;
+  int8 red, green, blue;
+  int8 high, low;
+  static rgb *clrtable[256];
+  rgb **colorptr;
+  
+  for (reg=n=0; n<256; n++) {
+    if (reg > 15)
+      reg = 0;
+    if (!reg) {
+      red = green = blue = 0;
+    }
+    else if (reg == 15) {
+      red = green = blue = 0xff;
+    }
+    else {
+      high = (reg+1);
+      red = green = blue = low = 0;
+      red = green = blue = (high<<4);
+    }
+
+    color = mkrgb(red, green, blue);
+    if (!color)
+      return (rgb **)0;
+    setpalette(n, color);
+
+    clrtable[n] = color;
+    reg++;
+  }
+  colorptr = (rgb **)&clrtable;
+  
+  return colorptr;
+}
+
+void setpalette(int8 reg, rgb *color) {
+  if (!color)
+    return;
+  
+  xsetpalette($2 reg, color->red, color->green, color->blue);
+
+  return;
 }
 
 void videomode(int8 mode) {
